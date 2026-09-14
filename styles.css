@@ -1,49 +1,44 @@
-/* 공통 레이아웃 및 리셋 */
+/* ==========================
+   1. 공통 기본 및 레이아웃 스타일
+   ========================== */
 * {
     box-sizing: border-box;
 }
 
 body {
     margin: 0;
-    font-family: 'Apple SD Gothic Neo', sans-serif;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
     line-height: 1.6;
     background-color: #f4f6f9;
-    color: #333;
+    color: #333333;
 }
 
 .page {
     max-width: 800px;
     margin: 40px auto;
-    background: #ffffff;
     padding: 30px;
+    background-color: #ffffff;
     border-radius: 12px;
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
 }
 
-/* 헤더 영역 (처음으로 버튼 절대 위치 지정을 위해 relative 설정) */
 header {
     text-align: center;
     margin-bottom: 30px;
     position: relative;
     padding-top: 15px;
+    border-bottom: 1px solid #dfe4ef;
 }
 
-/* "처음으로" 버튼을 왼쪽 위로 이동 */
 header > a {
     position: absolute;
     top: 0;
     left: 0;
     font-size: 0.9rem;
     padding: 6px 12px;
-    background-color: #f0f4f8;
     border-radius: 6px;
     text-decoration: none;
-    color: #4a5568;
     transition: background 0.2s;
-}
-
-header > a:hover {
-    background-color: #e2e8f0;
 }
 
 nav {
@@ -61,14 +56,23 @@ nav a {
     transition: background 0.2s;
 }
 
-.place-card {
-    border: 1px solid #e1e4e8;
+.panel, .place-card {
     padding: 20px;
-    border-radius: 8px;
     margin-bottom: 20px;
+    border-radius: 8px;
+    background-color: #fafbfc;
+    border: 1px solid #e1e4e8;
 }
 
-/* 이미지 크기 고정 및 상자 맞춤 설정 */
+.place-card {
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.place-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.05);
+}
+
 .panel img, figure img, main img {
     width: 100%;
     max-height: 400px;
@@ -76,229 +80,117 @@ nav a {
     border-radius: 6px;
 }
 
-.panel {
-    margin-bottom: 25px;
-    padding: 20px;
-    border-radius: 8px;
-    background: #fafbfc;
+.action {
+    display: inline-block;
+    padding: 0.8rem 1.4rem;
+    color: white;
+    text-decoration: none;
+    border-radius: 4px;
+    font-weight: bold;
+    border: none;
+    cursor: pointer;
+    background-color: #2b6cb0;
+}
+
+.action:hover {
+    background-color: #2c5282;
 }
 
 footer {
     text-align: center;
     margin-top: 40px;
     font-size: 0.9rem;
-    color: #666;
-    border-top: 1px solid #eee;
     padding-top: 20px;
+    border-top: 1px solid #eee;
+    color: #666;
 }
 
 /* ==========================
-   페이지별 네 가지 분위기 연출
-   ================---------- */
+   2. 페이지별 네 가지 분위기 (테마)
+   ========================== */
 
-/* 1. 홈 (모던하고 깔끔한 블루톤) */
-body.page-home header {
-    border-bottom: 3px solid #3182ce;
-}
-body.page-home nav a {
-    background-color: #ebf8ff;
-    color: #2b6cb0;
-}
-
-/* 2. 다솔관 (지적이고 차분한 네이비/그레이톤) */
-body.page-dasol {
-    background-color: #edf2f7;
-}
-body.page-dasol .page {
-    border-top: 5px solid #2d3748;
-}
-body.page-dasol nav a {
-    background-color: #e2e8f0;
-    color: #1a202c;
-}
-
-/* 3. 매머드커피 (활력 넘치는 오렌지/옐로우 여름톤) */
-body.page-mammoth {
-    background: linear-gradient(135deg, #e0f7fa 0%, #80deea 50%, #e0f7fa 100%);
-}
-body.page-mammoth .page {
-    border-top: 5px solid #ff9800;
-}
-body.page-mammoth header h1 {
-    background: linear-gradient(to right, #f57c00, #ffeb3b);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    display: inline-block;
-}
-body.page-mammoth nav a {
-    background-color: #ffe0b2;
-    color: #e65100;
-}
-
-/* 4. 니콜스관 (안정감 있는 그린/브라운 랜드마크톤) */
-body.page-nichols {
-    background-color: #f0fff4;
-}
-body.page-nichols .page {
-    border-top: 5px solid #38a169;
-}
-body.page-nichols nav a {
-    background-color: #c6f6d5;
-    color: #22543d;
-}
-/* 다솔관 다크/진중한 톤 스타일 */
-body.page-dasol {
-    background-color: #1a202c; /* 어두운 네이비/그레이 배경 */
-    color: #e2e8f0;
-}
-body.page-dasol .page {
-    background-color: #2d3748; /* 본문 상자 배경도 어둡게 */
-    border-top: 5px solid #4a5568;
-    color: #f7fafc;
-}
-body.page-dasol header > a {
-    background-color: #4a5568;
-    color: #e2e8f0;
-}
-body.page-dasol header > a:hover {
-    background-color: #718096;
-}
-body.page-dasol .panel {
-    background: #1a202c;
-    border: 1px solid #4a5568;
-}
-body.page-dasol nav a {
-    background-color: #4a5568;
-    color: #e2e8f0;
-}
-body.page-dasol footer {
-    color: #a0aec0;
-    border-top-color: #4a5568;
-}
-/* 매머드커피 옵션 1: 청량한 여름 하늘과 레몬 톤 */
-body.page-mammoth {
-    background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 50%, #e1f5fe 100%);
-}
-body.page-mammoth .page {
-    background-color: #ffffff;
-    border-top: 5px solid #00bcd4; /* 시원한 아쿠아 블루 포인트 */
-    box-shadow: 0 10px 25px rgba(0, 188, 212, 0.15);
-}
-body.page-mammoth header h1 {
-    background: linear-gradient(to right, #0288d1, #ffb300); /* 블루 & 레몬 옐로우 그라데이션 */
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    display: inline-block;
-}
-body.page-mammoth .panel {
-    background: #f0f9ff;
-    border: 1px solid #bae6fd;
-}
-body.page-mammoth .panel h2 {
-    color: #0288d1;
-}
-body.page-mammoth .action {
-    background-color: #0288d1;
-    color: #ffffff;
-    border: none;
-}
-body.page-mammoth .action:hover {
-    background-color: #0369a1;
-}
-/* 모든 페이지의 메인 제목(h1)에 매머드커피와 같은 그라데이션 적용 */
-header h1 {
-    background: linear-gradient(to right, #f57c00, #ffeb3b);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    display: inline-block;
-}
-/* 니콜스관 싱그러운 그린 랜드마크 톤 스타일 */
-body.page-nichols {
-    background-color: #e6f4ea; /* 은은하고 부드러운 연두/초록빛 배경 */
-    color: #202124;
-}
-body.page-nichols .page {
-    background-color: #ffffff;
-    border-top: 5px solid #137333; /* 묵직하고 안정감 있는 딥 그린 포인트 */
-    box-shadow: 0 10px 25px rgba(19, 115, 51, 0.12);
-}
-body.page-nichols header > a {
-    background-color: #ceead6;
-    color: #137333;
-}
-body.page-nichols header > a:hover {
-    background-color: #a8dab5;
-}
-body.page-nichols .panel {
-    background: #f1f8f4;
-    border: 1px solid #cce8d8;
-}
-body.page-nichols .panel h2 {
-    color: #137333;
-}
-body.page-nichols .action {
-    background-color: #137333;
-    color: #ffffff;
-    border: none;
-}
-body.page-nichols .action:hover {
-    background-color: #0d5224;
-}
-body.page-nichols nav a {
-    background-color: #ceead6;
-    color: #137333;
-}
-body.page-nichols footer {
-    color: #5f6368;
-    border-top-color: #e0e0e0;
-}
-/* 메인 페이지(index.html): 사계절을 아우르는 부드러운 그라데이션 톤 */
+/* ① 홈 (사계절 멀티 그라데이션) */
 body.page-home {
     background: linear-gradient(135deg, #fce4ec 0%, #e8f5e9 33%, #fff3e0 66%, #e3f2fd 100%);
     background-attachment: fixed;
 }
-body.page-home .page {
-    background-color: #ffffff;
-    border-top: 5px solid #ab47bc; /* 사계절을 상징하는 영롱한 퍼플/멀티 포인트 */
-    box-shadow: 0 10px 25px rgba(171, 71, 188, 0.12);
+body.page-home .page { border-top: 5px solid #ab47bc; }
+body.page-home header > a { background-color: #f3e5f5; color: #7b1fa2; }
+body.page-home header > a:hover { background-color: #e1bee7; }
+body.page-home nav a { background-color: #f3e5f5; color: #7b1fa2; }
+
+/* ② 다솔관 (진중하고 어두운 네이비/그레이 톤) */
+body.page-dasol {
+    background-color: #1a202c;
+    color: #e2e8f0;
 }
-body.page-home header > a {
-    background-color: #f3e5f5;
-    color: #7b1fa2;
+body.page-dasol .page {
+    background-color: #2d3748;
+    border-top: 5px solid #4a5568;
+    color: #f7fafc;
 }
-body.page-home header > a:hover {
-    background-color: #e1bee7;
+body.page-dasol header > a { background-color: #4a5568; color: #e2e8f0; }
+body.page-dasol header > a:hover { background-color: #718096; }
+body.page-dasol .panel, body.page-dasol .place-card { background: #1a202c; border-color: #4a5568; }
+body.page-dasol nav a { background-color: #4a5568; color: #e2e8f0; }
+body.page-dasol footer { color: #a0aec0; border-top-color: #4a5568; }
+
+/* ③ 매머드커피 (청량한 하늘빛 블루 포인트) */
+body.page-mammoth {
+    background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 50%, #e1f5fe 100%);
 }
-body.page-home .place-card {
-    background: #fafafa;
-    border: 1px solid #eeeeee;
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
+body.page-mammoth .page { border-top: 5px solid #00bcd4; }
+body.page-mammoth header > a { background-color: #e0f7fa; color: #00838f; }
+body.page-mammoth .panel { background: #f0f9ff; border-color: #bae6fd; }
+body.page-mammoth nav a { background-color: #e0f7fa; color: #00838f; }
+body.page-mammoth .action { background-color: #0288d1; }
+body.page-mammoth .action:hover { background-color: #0369a1; }
+
+/* ④ 니콜스관 (싱그러운 딥 그린 랜드마크 톤) */
+body.page-nichols {
+    background-color: #e6f4ea;
 }
-body.page-home .place-card:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.05);
-}
-body.page-home footer {
-    color: #616161;
-    border-top-color: #eeeeee;
-}
-/* 모바일 전용 반응형 @media 규칙 */
+body.page-nichols .page { border-top: 5px solid #137333; }
+body.page-nichols header > a { background-color: #ceead6; color: #137333; }
+body.page-nichols header > a:hover { background-color: #a8dab5; }
+body.page-nichols .panel { background: #f1f8f4; border-color: #cce8d8; }
+body.page-nichols nav a { background-color: #ceead6; color: #137333; }
+body.page-nichols .action { background-color: #137333; }
+body.page-nichols .action:hover { background-color: #0d5224; }
+
+
+/* ==========================
+   3. 모바일 반응형 디자인 (화면 너비 600px 이하)
+   ========================== */
 @media (max-width: 600px) {
     .page {
         width: 95%;
         margin: 15px auto;
         padding: 15px;
         border-radius: 8px;
+        box-shadow: none;
     }
 
-    header h1 {
-        font-size: 1.8rem;
+    header {
+        padding-top: 0;
     }
 
-    header p {
-        font-size: 0.95rem;
+    /* 모바일에서는 '처음으로' 절대위치 해제 후 상단 배치 */
+    header > a {
+        position: static;
+        display: inline-block;
+        margin-bottom: 12px;
     }
 
+    h1 {
+        font-size: 1.6rem;
+    }
+
+    h2 {
+        font-size: 1.25rem;
+    }
+
+    /* 모바일 네비게이션 세로 정렬 및 터치 영역 확대 */
     nav {
         flex-direction: column;
         gap: 8px;
@@ -312,11 +204,36 @@ body.page-home footer {
 
     .panel, .place-card {
         padding: 15px;
+        margin: 1rem 0;
     }
 
-    header > a {
-        position: static;
-        display: inline-block;
-        margin-bottom: 10px;
+    /* 스마트폰에서 누르기 편하도록 버튼 가로 폭 전체 확장 */
+    .action {
+        display: block;
+        width: 100%;
+        text-align: center;
+        padding: 0.9rem 0;
+        box-sizing: border-box;
+        margin-top: 0.8rem;
     }
+}
+/* 기본(데스크톱) 화면에서는 '처음으로' 버튼 숨기기 */
+header > a {
+    display: none;
+}
+
+/* 모바일 반응형 디자인 (화면 너비 600px 이하) */
+@media (max-width: 600px) {
+    /* 모바일 화면에서만 '처음으로' 버튼을 다시 표시하고 정렬 */
+    header > a {
+        display: inline-block;
+        position: static;
+        margin-bottom: 12px;
+        font-size: 0.9rem;
+        padding: 6px 12px;
+        border-radius: 6px;
+        text-decoration: none;
+    }
+    
+    /* ... 나머지 모바일 스타일들 ... */
 }
