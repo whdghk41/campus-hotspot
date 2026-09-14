@@ -9,7 +9,25 @@
 <body class="page-mammoth">
     <div class="page">
         <header>
-            <a href="index.html">처음으로</a>
+            <nav class="top-nav">
+                <!-- 데스크탑용 '처음으로' 버튼 -->
+                <a href="index.html" class="desktop-home-btn">처음으로</a>
+
+                <!-- 모바일용 햄버거 메뉴 -->
+                <div class="mobile-menu-container">
+                    <div class="hamburger-box" onclick="toggleMenu()">
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                    </div>
+                    <ul class="mobile-dropdown">
+                        <li><a href="index.html">처음으로</a></li>
+                        <li><a href="dasol.html">다솔관</a></li>
+                        <li><a href="nichols.html">니콜스관</a></li>
+                    </ul>
+                </div>
+            </nav>
+
             <h1>매머드커피</h1>
             <p>수업 전후 카페인 충전과 활력을 주는 필수 코스</p>
         </header>
@@ -17,24 +35,31 @@
             <section class="panel">
                 <h2>이 장소를 소개합니다</h2>
                 <figure>
-                    <img src="images/mammoth.jpg" alt="매머드커피 음료와 매장 전경">
+                    <img src="images/mammoth.jpg" alt="매머드커피 매장 전경">
                     <figcaption>매머드커피 매장 전경</figcaption>
                 </figure>
-                <p>이른 아침 수업이나 긴 오후 강의를 버텨내게 해주는 든든한 에너지 충전소입니다.</p>
+                <p>강의 사이 쉬는 시간이나 등교 길에 시원한 음료와 함께 잠시 숨을 고를 수 있는 활력소 같은 공간입니다.</p>
             </section>
             <section class="panel">
                 <h2>찾아가는 길</h2>
-                <p>교내 주요 건물 동선 인근에 위치해 접근성이 매우 좋습니다.</p>
-                <a class="action" href="https://naver.me/F2Z99wOu" target="_blank" rel="noopener">온라인 지도에서 위치 확인</a>
+                <p>학교 주변 접근성이 좋아 학생들이 즐겨 찾는 휴식처입니다.</p>
+                <a class="action" href="https://naver.me/F2Z99wOu">온라인 지도에서 위치 확인</a>
             </section>
         </main>
         <footer>
             <nav>
-                <a href="dasol.html">이전 장소: 다솔관</a> | 
-                <a href="nichols.html">다음 장소: 니콜스관</a>
+                <a href="dasol.html">이전 장소: 다솔관</a> |
+                <a href="nichols.html"> 다음 장소: 니콜스관</a> 
             </nav>
             <p>출처: 네이버 지도</p>
         </footer>
     </div>
+
+    <script>
+        function toggleMenu() {
+            const menuContainer = document.querySelector('.mobile-menu-container');
+            menuContainer.classList.toggle('active');
+        }
+    </script>
 </body>
 </html>

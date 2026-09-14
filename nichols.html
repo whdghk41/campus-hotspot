@@ -9,7 +9,25 @@
 <body class="page-nichols">
     <div class="page">
         <header>
-            <a href="index.html">처음으로</a>
+            <nav class="top-nav">
+                <!-- 데스크탑용 '처음으로' 버튼 -->
+                <a href="index.html" class="desktop-home-btn">처음으로</a>
+
+                <!-- 모바일용 햄버거 메뉴 -->
+                <div class="mobile-menu-container">
+                    <div class="hamburger-box" onclick="toggleMenu()">
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                    </div>
+                    <ul class="mobile-dropdown">
+                        <li><a href="index.html">처음으로</a></li>
+                        <li><a href="dasol.html">다솔관</a></li>
+                        <li><a href="mammoth.html">매머드</a></li>
+                    </ul>
+                </div>
+            </nav>
+
             <h1>니콜스관</h1>
             <p>다양한 강의실과 학과 사무실이 모여 있는 중심 공간</p>
         </header>
@@ -17,24 +35,31 @@
             <section class="panel">
                 <h2>이 장소를 소개합니다</h2>
                 <figure>
-                    <img src="images/nichols.jpg" alt="가톨릭대학교 니콜스관 전경">
+                    <img src="images/nichols.jpg" alt="니콜스관 전경">
                     <figcaption>니콜스관 전경</figcaption>
                 </figure>
-                <p>수많은 전공 수업을 들으며 대학 생활의 추억이 가장 많이 쌓인 건물입니다.</p>
+                <p>학생들이 가장 많이 찾는 강의실과 행정 부서들이 밀접해 있어 활기가 넘치는 캠퍼스의 중심지입니다.</p>
             </section>
             <section class="panel">
                 <h2>찾아가는 길</h2>
-                <p>정문으로 들어와 중앙로를 따라 직진하면 가장 먼저 눈에 띄는 대형 건물입니다.</p>
-                <a class="action" href="https://naver.me/xVGFQF3f" target="_blank" rel="noopener">온라인 지도에서 위치 확인</a>
+                <p>캠퍼스 메인 동선에 위치하여 어디서든 접근하기 수월합니다.</p>
+                <a class="action" href="https://naver.me/xVGFQF3f">온라인 지도에서 위치 확인</a>
             </section>
         </main>
         <footer>
             <nav>
-                <a href="mammoth.html">이전 장소: 매머드커피</a> | 
-                <a href="index.html">메인으로</a>
+                <a href="mammoth.html">이전 장소: 매머드커피</a> |
+                <a href="index.html"> 메인으로</a>
             </nav>
             <p>출처: 네이버 지도</p>
         </footer>
     </div>
+
+    <script>
+        function toggleMenu() {
+            const menuContainer = document.querySelector('.mobile-menu-container');
+            menuContainer.classList.toggle('active');
+        }
+    </script>
 </body>
 </html>

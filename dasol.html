@@ -9,7 +9,25 @@
 <body class="page-dasol">
     <div class="page">
         <header>
-            <a href="index.html">처음으로</a>
+            <nav class="top-nav">
+                <!-- 데스크탑용 '처음으로' 버튼 -->
+                <a href="index.html" class="desktop-home-btn">처음으로</a>
+
+                <!-- 모바일용 햄버거 메뉴 (메뉴 첫 번째에 '처음으로' 배치) -->
+                <div class="mobile-menu-container">
+                    <div class="hamburger-box" onclick="toggleMenu()">
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                    </div>
+                    <ul class="mobile-dropdown">
+                        <li><a href="index.html">처음으로</a></li>
+                        <li><a href="mammoth.html">매머드</a></li>
+                        <li><a href="nichols.html">니콜스관</a></li>
+                    </ul>
+                </div>
+            </nav>
+
             <h1>다솔관</h1>
             <p>학업에 집중하며 생각을 정리하는 공간</p>
         </header>
@@ -25,16 +43,23 @@
             <section class="panel">
                 <h2>찾아가는 길</h2>
                 <p>교내 주요 학업 동선에 위치하여 강의 전후로 방문하기 편리합니다.</p>
-                <a class="action" href="#">온라인 지도에서 위치 확인</a>
+                <a class="action" href="https://naver.me/5bVjQ4lj">온라인 지도에서 위치 확인</a>
             </section>
         </main>
         <footer>
             <nav>
-                <a href="index.html">메인으로</a> | 
+                <a href="index.html"> 메인으로</a> |
                 <a href="mammoth.html">다음 장소: 매머드커피</a>
             </nav>
             <p>출처: 네이버 지도</p>
         </footer>
     </div>
+
+    <script>
+        function toggleMenu() {
+            const menuContainer = document.querySelector('.mobile-menu-container');
+            menuContainer.classList.toggle('active');
+        }
+    </script>
 </body>
 </html>
