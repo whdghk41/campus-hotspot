@@ -3,10 +3,10 @@
 - GitHub Pages URL: https://github.com/whdghk41/campus-hotspot
 
 ### 페이지별 스타일
-- 프론트페이지: 사계절 멀티 그라데이션의 밝고 화사한 분위기 / `.page-home` class를 적용하고 다채로운 그라데이션 배경(`background: linear-gradient(...)`)과 보라색 상단 테두리 선(`border-top`) 사용
-- 장소 1 (다솔관): 진중하고 어두운 네이비/그레이 톤의 차분한 분위기 / `.page-dasol` class를 적용하고 어두운 배경색(#1a202c)과 짙은 회색 패널을 조합하여 집중도 높은 공간 표현
-- 장소 2 (매머드커피): 청량한 하늘빛 블루 그라데이션의 여름 느낌 분위기 / `.page-mammoth` class를 적용하고 시원한 푸른 계열 그라데이션 배경과 반투명 백색 패널(`backdrop-filter: blur`)로 청량감 강조
-- 장소 3 (니콜스관): 싱그러운 딥 그린 랜드마크 톤의 친환경적 분위기 / `.page-nichols` class를 적용하고 연녹색 배경(#e6f4ea)과 진한 녹색 포인트 색상(#137333) 사용
+- 프론트페이지: 화사한 분위기 / `.page-home` class를 적용하고 다채로운 그라데이션 배경(`background: linear-gradient(...)`)과 보라색 상단 테두리 선(`border-top`) 사용
+- 장소 1 (다솔관): 차분한 분위기 / `.page-dasol` class를 적용하고 어두운 배경색(#1a202c)과 짙은 회색 패널을 조합하여 집중도 높은 공간 표현
+- 장소 2 (매머드커피): 여름 느낌 분위기 / `.page-mammoth` class를 적용하고 시원한 푸른 계열 그라데이션 배경과 반투명 백색 패널(`backdrop-filter: blur`)로 청량감 강조
+- 장소 3 (니콜스관): 친환경적 분위기 / `.page-nichols` class를 적용하고 연녹색 배경(#e6f4ea)과 진한 녹색 포인트 색상(#137333) 사용
 
 ### 모바일 스타일
 - 적용한 @media 조건: `@media screen and (max-width: 600px)`
