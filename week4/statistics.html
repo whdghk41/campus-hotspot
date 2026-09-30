@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>카페 현황 및 기온 추이 통합 뷰어</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      padding: 20px;
+      color: #17223b;
+      background: #f7f8fc;
+      font: 17px/1.65 system-ui, sans-serif;
+    }
+    h1 { font-size: 1.5rem; }
+    button, input { font: inherit; }
+    label { display: block; margin: 10px 0; }
+    .chart { position: relative; height: 450px; margin-top: 20px; background: white; padding: 15px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
+    
+    /* 전망 문구 박스 스타일 */
+    .forecast-box {
+      margin-top: 20px;
+      padding: 15px 20px;
+      background: white;
+      border-left: 4px solid #7455e9;
+      border-radius: 8px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+      display: none; /* 초기에는 숨김 */
+    }
+    .forecast-box h3 {
+      margin: 0 0 8px 0;
+      font-size: 1.05rem;
+      color: #7455e9;
+    }
+    .forecast-box p {
+      margin: 0;
+      font-size: 0.95rem;
+      color: #30205c;
+    }
+
+    footer {
+      text-align: center;
+      margin-top: 40px;
+      padding-top: 20px;
+      border-top: 1px solid #eee;
+    }
+    .source-link {
+      display: inline-block;
+      padding: 10px 20px;
+      background-color: rgba(0, 0, 0, 0.04);
+      border: 1px solid rgba(0, 0, 0, 0.1);
+      border-radius: 8px;
+      color: #17223b;
+      text-decoration: none;
+      font-size: 0.95rem;
+      font-weight: bold;
+      transition: all 0.2s ease;
+    }
+    .source-link:hover {
+      background-color: rgba(0, 0, 0, 0.08);
+      transform: translateY(-2px);
+    }
+
+    @media (max-width: 600px) {
+      body { padding: 12px; }
+    }
+  </style>
+  <!-- CSV 파싱을 위한 PapaParse 라이브러리 -->
+  <script src="https://cdn.jsdelivr.net/npm/papaparse@5.5.2/papaparse.min.js"></script>
+  <!-- 차트 생성을 위한 Chart.js 라이브러리 -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.8/dist/chart.umd.min.js"></script>
+</head>
+<body>
+
+<h1>카페 현황 및 기온 추이 통합 분석 뷰어</h1>
+<p>카페 CSV 파일 또는 기온(폭염날씨) CSV 파일을 선택하면 데이터에 맞춰 자동으로 적합한 그래프로 시각화합니다.</p>
+
+<label>CSV 파일 선택 <input type="file" id="file" accept=".csv,text/csv"></label>
+<p id="status" role="status">파일을 선택해주세요.</p>
+
+<div class="chart">
+  <canvas id="chart" role="img" aria-label="데이터 시각화 차트"></canvas>
+</div>
+
+<!-- 데이터 출처 바로 위에 위치할 전망 문구 영역 -->
+<div id="forecast-container" class="forecast-box">
+  <h3 id="forecast-title">📊 데이터 전망</h3>
+  <p id="forecast-text"></p>
+</div>
+
+<footer>
+  <a href="https://www.data.go.kr" target="_blank" class="source-link" id="source-link">데이터출처</a>
+</footer>
+
+<script>
+  let chart;
+
+  const brandKeywords = {
+    "메가MGC커피": "메가",
+    "컴포즈커피": "컴포즈",
+    "이디야커피": "이디야",
+    "빽다방": "빽다방",
+    "더벤티": "더벤티",
+    "스타벅스": "스타벅스",
+    "투썸플레이스": "투썸",
+    "공차": "공차",
+    "할리스": "할리스"
+  };
+
+  function processCafeData(data) {
+    const counts = {};
+    for (const brand in brandKeywords) {
+      counts[brand] = 0;
+    }
+
+    let majorTotal = 0;
+    data.forEach(row => {
+      let name = "";
+      for (const key of Object.keys(row)) {
+        if (key.trim().includes("사업장명")) {
+          name = row[key];
+          break;
+        }
+      }
+      if (!name) return;
+      
+      let matched = false;
+      for (const [brand, keyword] of Object.entries(brandKeywords)) {
+        if (name.includes(keyword)) {
+          counts[brand]++;
+          majorTotal++;
+          matched = true;
+          break;
+        }
+      }
+    });
+
+    const etcCount = data.length - majorTotal;
+    counts["기타 (개인카페 등)"] = etcCount;
+
+    const labels = Object.keys(counts);
+    const values = Object.values(counts);
+
+    if (chart) {
+      chart.destroy();
+      chart = null;
+    }
+
+    const backgroundColors = labels.map(label => label.includes("기타") ? "#cbd5e1" : "#7455e9");
+
+    chart = new Chart(document.querySelector("#chart"), {
+      type: "bar",
+      data: {
+        labels: labels,
+        datasets: [{
+          label: "점포 수 (개)",
+          data: values,
+          backgroundColor: backgroundColors,
+          borderRadius: 6
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: { legend: { display: false } },
+        scales: { y: { beginAtZero: true } }
+      }
+    });
+
+    document.querySelector("#status").textContent = `분석 완료 (카페): 총 ${data.length}개 매장 중 메이저 ${majorTotal}개, 기타 ${etcCount}개 집계 완료`;
+    
+    // 카페 전망 문구 설정
+    document.querySelector("#forecast-title.forecast-box h3, #forecast-container h3").textContent = "☕ 부천시 카페 시장 전망";
+    document.querySelector("#forecast-text").textContent = "부천시 내에 다수의 프렌차이즈 카페가 밀집해있어 신규 진입 장벽은 낮지만 그만큼 카페의 수가 많기 때문에 생존 경쟁은 매우 치열할 것으로 보입니다.";
+    document.querySelector("#forecast-container").style.display = "block";
+
+    // 카페 데이터출처 링크 설정
+    const sourceLink = document.querySelector("#source-link");
+    sourceLink.href = "https://www.data.go.kr/data/15155666/standard.do";
+    sourceLink.textContent = "데이터출처 (소상공인시장진흥공단 상가(상권)정보)";
+  }
+
+  function processWeatherData(data) {
+    const dailySums = {};
+    const dailyCounts = {};
+
+    data.forEach(row => {
+      let date = "";
+      let tempVal = null;
+
+      for (const key of Object.keys(row)) {
+        const cleanKey = key.trim().replace(/^\uFEFF/, "");
+        if (cleanKey.includes("일시")) {
+          date = row[key] ? row[key].trim() : "";
+        }
+        if (cleanKey.includes("평균기온")) {
+          tempVal = row[key];
+        }
+      }
+
+      const temp = parseFloat(tempVal);
+      if (!date || isNaN(temp)) return;
+
+      if (!dailySums[date]) {
+        dailySums[date] = 0;
+        dailyCounts[date] = 0;
+      }
+      dailySums[date] += temp;
+      dailyCounts[date]++;
+    });
+
+    const sortedDates = Object.keys(dailySums).sort();
+    if (sortedDates.length === 0) {
+      document.querySelector("#status").textContent = "데이터에서 유효한 '일시' 또는 '평균기온' 열을 찾지 못했습니다.";
+      return;
+    }
+
+    const averages = sortedDates.map(date => Number((dailySums[date] / dailyCounts[date]).toFixed(2)));
+
+    if (chart) {
+      chart.destroy();
+      chart = null;
+    }
+
+    chart = new Chart(document.querySelector("#chart"), {
+      type: "line",
+      data: {
+        labels: sortedDates,
+        datasets: [{
+          label: "전국 평균 기온 (°C)",
+          data: averages,
+          borderColor: "#7455e9",
+          backgroundColor: "rgba(116, 85, 233, 0.1)",
+          fill: true,
+          tension: 0.2,
+          pointRadius: 4,
+          pointBackgroundColor: "#7455e9"
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: { legend: { display: true } },
+        scales: {
+          y: { beginAtZero: false, title: { display: true, text: '기온 (°C)' } },
+          x: { title: { display: true, text: '일시' } }
+        }
+      }
+    });
+
+    document.querySelector("#status").textContent = `분석 완료 (기상): 총 ${data.length}개 행 중 ${sortedDates.length}일간의 기온 추이 집계 완료`;
+    
+    // 날씨 전망 문구 설정
+    document.querySelector("#forecast-container h3").textContent = "🌡️ 기상 및 폭염 전망";
+    document.querySelector("#forecast-text").textContent = "지구온난화의 영향으로 여름철뿐만 아니라 9월 환절기까지 폭염과 열대야가 지속되었지만 현재를 기준으로는 날이 갈 수록 온도가 점차 떨어질 것입니다.";
+    document.querySelector("#forecast-container").style.display = "block";
+
+    // 날씨 데이터출처 링크 설정
+    const sourceLink = document.querySelector("#source-link");
+    sourceLink.href = "https://data.kma.go.kr/data/weatherIssue/slthtList.do?pgmNo=690";
+    sourceLink.textContent = "데이터출처 (기상청 기상자료개방포털)";
+  }
+
+  // 파일 업로드 이벤트 핸들러
+  document.querySelector("#file").addEventListener("change", function (event) {
+    const file = event.target.files[0];
+    if (!file) return;
+    if (typeof Papa === "undefined") {
+      document.querySelector("#status").textContent = "PapaParse 라이브러리를 불러오지 못했습니다.";
+      return;
+    }
+
+    document.querySelector("#status").textContent = "파일 분석 중...";
+
+    Papa.parse(file, {
+      header: true,
+      skipEmptyLines: true,
+      encoding: "UTF-8",
+      complete: function (results) {
+        if (results.errors.length > 0 && results.data.length === 0) {
+          document.querySelector("#status").textContent = "파일을 읽는 중 오류가 발생했습니다.";
+          return;
+        }
+
+        const fields = results.meta.fields || [];
+        const isCafe = fields.some(f => f.includes("사업장명"));
+        const isWeather = fields.some(f => f.includes("일시") || f.includes("평균기온"));
+
+        if (isCafe) {
+          processCafeData(results.data);
+        } else if (isWeather) {
+          processWeatherData(results.data);
+        } else {
+          document.querySelector("#status").textContent = "지원하지 않는 파일 형식입니다. (카페 또는 기상 데이터 CSV 파일 필요)";
+          document.querySelector("#forecast-container").style.display = "none";
+        }
+      },
+      error: function () {
+        document.querySelector("#status").textContent = "파일을 읽는 중 오류가 발생했습니다.";
+        document.querySelector("#forecast-container").style.display = "none";
+      }
+    });
+  });
+</script>
+
+</body>
+</html>

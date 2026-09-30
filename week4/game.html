@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>점프! 장애물 피하기 게임</title>
+    <style>
+        body {
+            margin: 0;
+            background: #1a1a2e;
+            color: #ffffff;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            font-family: system-ui, sans-serif;
+            overflow-x: hidden;
+            touch-action: manipulation;
+        }
+        h1 {
+            margin-bottom: 10px;
+            font-size: 1.4rem;
+            text-align: center;
+        }
+        #game-container {
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            max-width: 600px;
+        }
+        canvas {
+            background: #eef2f3;
+            border-radius: 12px;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
+            width: 100%;
+            height: auto;
+            max-width: 600px;
+            max-height: 300px;
+        }
+        p {
+            margin-top: 10px;
+            color: #a0aec0;
+            font-size: 0.85rem;
+            text-align: center;
+            padding: 0 10px;
+        }
+        .mobile-instruction {
+            display: none;
+        }
+        .btn-wrapper {
+            display: none; 
+            justify-content: space-between;
+            width: 100%;
+            max-width: 600px;
+            margin-top: 15px;
+            padding: 0 10px;
+            box-sizing: border-box;
+        }
+        .jump-btn {
+            width: 45%;
+            height: 70px;
+            background-color: #ff3838;
+            border: 4px solid #ffffff;
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: #ffffff;
+            cursor: pointer;
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.5);
+            transition: transform 0.08s, background-color 0.08s;
+        }
+        .jump-btn:active {
+            background-color: #d92020;
+            transform: scale(0.95);
+        }
+        @media (max-width: 768px) {
+            .desktop-instruction {
+                display: none;
+            }
+            .mobile-instruction {
+                display: inline;
+            }
+            .btn-wrapper {
+                display: flex;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div id="game-container">
+        <h1>🚀 네모의 모험 (장애물 피하기)</h1>
+        <canvas id="gameCanvas" width="600" height="300"></canvas>
+        <p>
+            조작 방법: 
+            <span class="desktop-instruction"><b>스페이스바(Space)</b> 또는 <b>위쪽 화살표(↑)</b>를 눌러 점프하세요!</span>
+            <span class="mobile-instruction"><b>아래 점프 버튼</b>을 눌러 점프하세요!</span>
+        </p>
+        <div class="btn-wrapper">
+            <div id="jump-btn-left" class="jump-btn">점프 ↑</div>
+            <div id="jump-btn-right" class="jump-btn">점프 ↑</div>
+        </div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById("gameCanvas");
+        const ctx = canvas.getContext("2d");
+
+        let player = {
+            x: 50,
+            y: 200,
+            width: 30,
+            height: 30,
+            dy: 0,
+            jumpPower: -10,
+            gravity: 0.5,
+            grounded: true,
+            color: "#ff6b6b"
+        };
+
+        let obstacles = [];
+        let frameCount = 0;
+        let score = 0;
+        let isGameOver = false;
+
+        function handleJump() {
+            if (player.grounded && !isGameOver) {
+                player.dy = player.jumpPower;
+                player.grounded = false;
+            }
+        }
+
+        function handleRestart() {
+            if (isGameOver) {
+                resetGame();
+            }
+        }
+
+        // # [1] 입력 처리 (키보드 및 터치 이벤트 감지)
+        // 사용자의 키 입력(스페이스바, 위 화살표)이나 모바일 버튼 터치를 감지하여 점프 및 재시작 함수를 실행합니다.
+        window.addEventListener("keydown", function(e) {
+            if (e.code === "Space" || e.code === "ArrowUp") {
+                handleJump();
+                e.preventDefault();
+            }
+            if (isGameOver && e.code === "Space") {
+                handleRestart();
+            }
+        });
+
+        const jumpBtnLeft = document.getElementById('jump-btn-left');
+        const jumpBtnRight = document.getElementById('jump-btn-right');
+
+        function onButtonAction(e) {
+            handleJump();
+            handleRestart();
+            e.preventDefault();
+        }
+
+        jumpBtnLeft.addEventListener('touchstart', onButtonAction);
+        jumpBtnRight.addEventListener('touchstart', onButtonAction);
+
+        function resetGame() {
+            obstacles = [];
+            score = 0;
+            frameCount = 0;
+            isGameOver = false;
+            loop();
+        }
+
+        function loop() {
+            if (isGameOver) return;
+
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // 바닥
+            ctx.fillStyle = "#cbd5e1";
+            ctx.fillRect(0, 230, canvas.width, 4);
+
+            // 플레이어 물리
+            player.dy += player.gravity;
+            player.y += player.dy;
+
+            if (player.y > 200) {
+                player.y = 200;
+                player.dy = 0;
+                player.grounded = true;
+            }
+
+            ctx.fillStyle = player.color;
+            ctx.fillRect(player.x, player.y, player.width, player.height);
+
+            // 장애물 생성
+            frameCount++;
+            if (frameCount % 100 === 0) {
+                let obstacleHeight = Math.floor(Math.random() * 30) + 20;
+                obstacles.push({
+                    x: canvas.width,
+                    y: 230 - obstacleHeight,
+                    width: 20,
+                    height: obstacleHeight,
+                    speed: 5 + Math.floor(score / 100)
+                });
+            }
+
+            // 장애물 이동 및 충돌 체크
+            for (let i = obstacles.length - 1; i >= 0; i--) {
+                let obs = obstacles[i];
+                obs.x -= obs.speed;
+
+                ctx.fillStyle = "#4a5568";
+                ctx.fillRect(obs.x, obs.y, obs.width, obs.height);
+
+                // # [3] 게임 종료 부분 (충돌 감지)
+                // 플레이어와 장애물의 위치가 겹치는지(AABB 충돌) 판단하고, 닿았을 경우 isGameOver를 true로 만들어 게임을 멈춥니다.
+                if (
+                    player.x < obs.x + obs.width &&
+                    player.x + player.width > obs.x &&
+                    player.y < obs.y + obs.height &&
+                    player.y + player.height > obs.y
+                ) {
+                    isGameOver = true;
+                }
+
+                // # [2] 진행 상태 변경 (점수 획득 및 장애물 제거)
+                // 장애물이 화면 왼쪽 밖으로 완전히 벗어나면 배열에서 제거하고, 생존 점수(score)를 10점씩 누적하여 게임 진행 상태를 업데이트합니다.
+                if (obs.x + obs.width < 0) {
+                    obstacles.splice(i, 1);
+                    score += 10;
+                }
+            }
+
+            // 점수 표시 렌더링
+            ctx.fillStyle = "#2d3748";
+            ctx.font = "16px sans-serif";
+            ctx.fillText("점수: " + score, 20, 30);
+
+            requestAnimationFrame(loop);
+        }
+
+        loop();
+    </script>
+</body>
+</html>

@@ -1,0 +1,416 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>환상의 짝꿍일까? · 팀플 케미 테스트</title>
+<style>
+/* 1. 디자인 및 테마 스타일 설정 */
+:root { color-scheme: light; --accent: #2b6cb0; }
+* { box-sizing: border-box; }
+body { margin: 0; padding: 24px; background: #ebf8ff; color: #2d3748; font-family: system-ui, sans-serif; line-height: 1.65; }
+main { max-width: 760px; margin: auto; }
+section, header { padding: 24px; margin-bottom: 18px; background: white; border: 1px solid #bee3f8; border-radius: 22px; }
+h1 { font-size: clamp(1.6rem, 5vw, 2.4rem); line-height: 1.25; }
+h2 { font-size: 1.3rem; }
+.eyebrow { color: #2b6cb0; font-weight: 750; letter-spacing: .06em; }
+button, input, select { font: inherit; border-radius: 10px; padding: 10px 14px; max-width: 100%; }
+button { border: 1px solid #cbd5e0; background: #f7fafc; color: #2d3748; cursor: pointer; }
+button.primary { background: var(--accent); color: white; }
+button:disabled { opacity: .5; cursor: default; }
+button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px solid #3182ce; outline-offset: 3px; }
+input, select { border: 1px solid #cbd5e0; background: white; color: #2d3748; }
+.actions { display: flex; gap: 10px; flex-wrap: wrap; margin: 14px 0; }
+.choices { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 18px 0; }
+.choices button { min-height: 88px; }
+.choices button[aria-pressed="true"] { background: #2b6cb0; color: white; border: 3px solid #1a365d; }
+progress { width: 100%; accent-color: var(--accent); }
+.notice { padding: 12px; border-radius: 10px; background: #feebc8; }
+.muted { color: #718096; font-size: .92rem; }
+.record { padding: 16px 0; border-bottom: 1px solid #e2e8f0; overflow-wrap: anywhere; }
+.record p { margin: 5px 0; }
+[hidden] { display: none !important; }
+@media (max-width: 480px) { body { padding: 12px; } section, header { padding: 18px; } .choices { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+<main>
+<header>
+  <p class="eyebrow">TEAMWORK CHEMISTRY TEST</p>
+  <h1>환상의 짝꿍일까, 대환장 파티일까?</h1>
+  <p>여섯 개의 선택으로 알아보는 우리들의 팀플 케미! 친구와 같은 기기에서 번갈아 도전하고, 스타일이 얼마나 잘 맞는지 확인해 보세요.</p>
+  <p class="muted">정식 성격 진단이 아닌 가벼운 놀이입니다. 이 브라우저의 기록만 보관되며, 다른 기기의 기록은 합쳐지지 않습니다.</p>
+</header>
+<p id="notice" class="notice" role="status" hidden></p>
+<section id="home">
+  <h2>내 팀플 스타일 먼저 알아보기</h2>
+  <label for="nickname">별명 (선택, 20자까지)</label>
+  <input id="nickname" maxlength="20" placeholder="비워 두어도 좋아요">
+  <div class="actions">
+    <button id="start" class="primary">새로 시작</button>
+    <button id="resume" disabled>이어하기</button>
+  </div>
+  <p class="muted">새로 시작하면 진행 중인 답변을 새 답변으로 바꿉니다. 완료 기록은 유지됩니다.</p>
+</section>
+<section id="quiz" hidden aria-labelledby="question">
+  <p id="step" class="eyebrow"></p>
+  <progress id="progress" max="6" value="0" aria-label="답한 문항 수"></progress>
+  <h2 id="question" tabindex="-1"></h2>
+  <div id="choices" class="choices"></div>
+  <div class="actions">
+    <button id="previous">이전</button>
+    <button id="next" class="primary" disabled>다음</button>
+  </div>
+</section>
+<section id="result" hidden>
+  <p class="eyebrow">MY TEAMWORK CARD</p>
+  <h2 id="result-title" tabindex="-1"></h2>
+  <p id="result-description"></p>
+  <p id="result-owner"></p>
+  <ul id="result-answers"></ul>
+  
+  <!-- 나만의 표현: 친구와 답이 다른 문항 대화 가이드 추가 -->
+  <div id="chat-guide" class="notice" style="margin: 16px 0; background: #e2e8f0; color: #1a202c;"></div>
+
+  <label for="friend">이 기록과 비교할 친구</label>
+  <select id="friend"><option value="">친구를 선택하세요</option></select>
+  <div id="comparison" aria-live="polite"></div>
+  <div class="actions"><button id="next-person" class="primary">다음 친구 도전</button></div>
+</section>
+<section>
+  <h2 id="history-count">저장된 결과 0개</h2>
+  <p class="muted">이 브라우저에서 참여한 최근 20개의 기록입니다. 결과 보기를 눌러 다시 비교할 수 있습니다.</p>
+  <div id="history"></div>
+</section>
+<section>
+  <h2>내 데이터 관리</h2>
+  <div class="actions">
+    <button id="inspect">내 저장 데이터 보기</button>
+    <button id="delete-draft">진행 중인 답변 삭제</button>
+    <button id="delete-all">게임 데이터 전체 삭제</button>
+  </div>
+  <div id="data-view" hidden>
+    <h3>진행 중인 답변 · sessionStorage</h3><div id="draft-data"></div>
+    <h3>완료 기록 · localStorage</h3><div id="history-data"></div>
+  </div>
+</section>
+</main>
+<script>
+// 2. 질문과 선택지 (4가지 신규 질문 포함 총 6문항)
+const VERSION = "team-chem-v1";
+const QUESTIONS = [
+  { id: "break", title: "공강 두 시간, 팀플 회의 전 나는?", choices: ["카페에서 여유롭게 커피 마시기", "미리 도서관 자리 잡고 자료 읽기"] },
+  { id: "chat", title: "팀플 카톡방 개설! 첫 마디는?", choices: ["'안녕하세요! 다들 반가워요 😊'", "'다들 편하신 시간대 투표 부탁드려요!'"] },
+  { id: "research", title: "자료 조사를 맡게 되었을 때 나의 스타일은?", choices: ["논문과 통계 자료까지 깊게 파고들기", "핵심만 깔끔하게 정리된 기사 위주로 찾기"] },
+  { id: "deadline", title: "조별 과제 발표 전날 밤, 나의 상태는?", choices: ["밤새워 완벽하게 오타까지 최종 검수하기", "'내일 아침에 일어나서 마저 하지 뭐' 하고 자기"] },
+  { id: "late", title: "발표 당일, 조원 중 누군가가 지각을 했다!", choices: ["비상 대책 세우기", "'어차피 대본은 다 외웠으니 내가 발표하지 뭐'"] },
+  { id: "after", title: "모든 과제가 끝난 뒤 뒤풀이 장소는?", choices: ["시끌벅적하고 신나는 번화가 술집", "조용하고 편안한 맛집이나 카페"] }
+];
+
+// 3. 결과에 의미 부여 (3가지 유형 정의)
+const RESULTS = {
+  planner: { 
+    title: "철저한 계획형 조장 타입 👑", 
+    description: "언제나 일정을 꼼꼼히 챙기고 미리미리 준비하는 당신! 조원들을 이끄는 든든한 리더 스타일입니다." 
+  },
+  balanced: { 
+    title: "유연한 올라운더 타입 ⚖️", 
+    description: "상황에 맞게 자료 조사도 열심히 하고 일정 조율도 도맡아 하는 센스 만점 팀원입니다." 
+  },
+  genius: { 
+    title: "직관적인 마감 직전 능력자 타입 ⚡", 
+    description: "평소엔 여유로워 보이지만 마감 직전에 폭발적인 집중력과 아이디어를 쏟아내는 능력자입니다!" 
+  }
+};
+
+const DRAFT_KEY = "week5.teamchem.draft";
+const HISTORY_KEY = "week5.teamchem.history";
+const MAX_HISTORY = 20;
+const $ = function (selector) { return document.querySelector(selector); };
+
+const memory = { sessionStorage: {}, localStorage: {} };
+const unsaved = { sessionStorage: new Set(), localStorage: new Set() };
+function inform(message) {
+  $("#notice").hidden = false;
+  $("#notice").textContent = message;
+}
+function readJSON(area, key, fallback) {
+  let raw;
+  try {
+    raw = window[area].getItem(key);
+    if (unsaved[area].has(key)) raw = memory[area][key] ?? null;
+  } catch (error) {
+    inform("저장소를 사용할 수 없어 이번 실행 중에만 기억합니다.");
+    raw = memory[area][key] ?? null;
+  }
+  if (raw === null) return fallback;
+  try { return JSON.parse(raw); } catch (error) { return fallback; }
+}
+function writeJSON(area, key, value) {
+  const raw = JSON.stringify(value);
+  memory[area][key] = raw;
+  try {
+    window[area].setItem(key, raw);
+    unsaved[area].delete(key);
+  } catch (error) {
+    unsaved[area].add(key);
+  }
+}
+function removeKey(area, key) {
+  delete memory[area][key];
+  try {
+    window[area].removeItem(key);
+    unsaved[area].delete(key);
+  } catch (error) {
+    unsaved[area].add(key);
+  }
+}
+function resultType(answers) {
+  let score = 0;
+  for (const question of QUESTIONS) score += answers[question.id];
+  if (score * 2 === QUESTIONS.length) return "balanced";
+  if (score * 2 > QUESTIONS.length) return "genius";
+  return "planner";
+}
+function validAnswers(answers, complete) {
+  if (!answers || typeof answers !== "object" || Array.isArray(answers)) return false;
+  for (const id of Object.keys(answers)) {
+    if (!QUESTIONS.some(function (q) { return q.id === id; })) return false;
+    if (answers[id] !== 0 && answers[id] !== 1) return false;
+  }
+  return !complete || QUESTIONS.every(function (q) { return Object.hasOwn(answers, q.id); });
+}
+function validBase(value) {
+  return value && typeof value === "object" && value.version === VERSION &&
+    typeof value.id === "string" && value.id.length > 0 &&
+    typeof value.nickname === "string" && value.nickname.length <= 20;
+}
+function loadDraft() {
+  const value = readJSON("sessionStorage", DRAFT_KEY, null);
+  if (value === null) return null;
+  if (validBase(value) && validAnswers(value.answers, false) &&
+      Number.isInteger(value.current) && value.current >= 0 && value.current < QUESTIONS.length) return value;
+  removeKey("sessionStorage", DRAFT_KEY);
+  return null;
+}
+function loadHistory() {
+  const value = readJSON("localStorage", HISTORY_KEY, []);
+  if (!Array.isArray(value)) return [];
+  return value.filter(function (record) {
+    return validBase(record) && validAnswers(record.answers, true) &&
+      typeof record.completedAt === "string" && Number.isFinite(Date.parse(record.completedAt)) &&
+      Object.hasOwn(RESULTS, record.type);
+  }).slice(-MAX_HISTORY);
+}
+let history = loadHistory();
+let draft = loadDraft();
+let selectedId = null;
+if (draft && history.some(function (record) { return record.id === draft.id; })) {
+  draft = null;
+  removeKey("sessionStorage", DRAFT_KEY);
+}
+function saveDraft() { writeJSON("sessionStorage", DRAFT_KEY, draft); }
+function makeText(tag, text) {
+  const element = document.createElement(tag);
+  element.textContent = text;
+  return element;
+}
+function action(label, callback) {
+  const button = makeText("button", label);
+  button.type = "button";
+  button.addEventListener("click", callback);
+  return button;
+}
+function answerSummary(record) {
+  const list = document.createElement("ul");
+  for (const question of QUESTIONS) {
+    const choice = record.answers[question.id];
+    const label = choice === undefined ? "아직 선택하지 않음" : question.choices[choice];
+    list.append(makeText("li", question.title + " → " + label));
+  }
+  return list;
+}
+function goHome() {
+  $("#home").hidden = false;
+  $("#quiz").hidden = true;
+  $("#result").hidden = true;
+  selectedId = null;
+  $("#comparison").replaceChildren();
+  $("#friend").replaceChildren(makeText("option", "친구를 선택하세요"));
+  $("#nickname").value = "";
+  renderHistory();
+}
+function renderQuestion() {
+  $("#home").hidden = true;
+  $("#result").hidden = true;
+  $("#quiz").hidden = false;
+  const question = QUESTIONS[draft.current];
+  $("#step").textContent = (draft.current + 1) + " / " + QUESTIONS.length;
+  $("#progress").max = QUESTIONS.length;
+  $("#progress").value = Object.keys(draft.answers).length;
+  $("#question").textContent = question.title;
+  $("#choices").replaceChildren();
+  question.choices.forEach(function (label, index) {
+    const button = action(label, function () {
+      draft.answers[question.id] = index;
+      saveDraft();
+      renderQuestion();
+      $("#choices").children[index].focus();
+      renderData();
+    });
+    button.setAttribute("aria-pressed", String(draft.answers[question.id] === index));
+    $("#choices").append(button);
+  });
+  $("#previous").disabled = draft.current === 0;
+  $("#next").disabled = draft.answers[question.id] === undefined;
+  $("#next").textContent = draft.current === QUESTIONS.length - 1 ? "결과 완성" : "다음";
+}
+function finish() {
+  if (!draft || !validAnswers(draft.answers, true)) return;
+  history = loadHistory();
+  const record = { id: draft.id, version: VERSION, nickname: draft.nickname,
+    answers: { ...draft.answers }, type: resultType(draft.answers), completedAt: new Date().toISOString() };
+  if (!history.some(function (item) { return item.id === record.id; })) {
+    history.push(record);
+    history = history.slice(-MAX_HISTORY);
+    writeJSON("localStorage", HISTORY_KEY, history);
+  }
+  draft = null;
+  removeKey("sessionStorage", DRAFT_KEY);
+  renderHistory();
+  showResult(record.id);
+}
+function showResult(id) {
+  const record = history.find(function (item) { return item.id === id; });
+  if (!record) { goHome(); return; }
+  selectedId = id;
+  $("#home").hidden = true;
+  $("#quiz").hidden = true;
+  $("#result").hidden = false;
+  $("#result-title").textContent = RESULTS[record.type].title;
+  $("#result-description").textContent = RESULTS[record.type].description;
+  $("#result-owner").textContent = record.nickname + "의 선택 · " + new Date(record.completedAt).toLocaleString("ko-KR");
+  $("#result-answers").replaceChildren(...answerSummary(record).children);
+  
+  // 4. 나만의 표현 추가: 친구와 비교 전 대화 유도 멘트 출력
+  $("#chat-guide").textContent = "💡 대화 팁: 친구를 선택해 서로 답이 다른 문항을 확인하고, '너는 발표 당일에 지각하면 어떻게 대처할 거야?' 같은 질문으로 이야기를 나눠보세요!";
+
+  $("#friend").replaceChildren();
+  const empty = makeText("option", "친구를 선택하세요");
+  empty.value = "";
+  $("#friend").append(empty);
+  for (const friend of history) {
+    if (friend.id === id) continue;
+    const option = makeText("option", friend.nickname + " · " + new Date(friend.completedAt).toLocaleTimeString("ko-KR"));
+    option.value = friend.id;
+    $("#friend").append(option);
+  }
+  $("#comparison").replaceChildren();
+  $("#result-title").focus();
+}
+function renderData() {
+  if ($("#data-view").hidden) return;
+  const draftBox = $("#draft-data");
+  draftBox.replaceChildren();
+  if (!draft) draftBox.append(makeText("p", "진행 중인 답변이 없습니다."));
+  else {
+    draftBox.append(makeText("p", draft.nickname + " · 현재 " + (draft.current + 1) + "번 문항"), answerSummary(draft));
+  }
+  const box = $("#history-data");
+  box.replaceChildren();
+  if (history.length === 0) box.append(makeText("p", "완료 기록이 없습니다."));
+  for (const record of history) {
+    const card = makeText("div", "");
+    card.className = "record";
+    card.append(makeText("p", record.nickname + " · " + RESULTS[record.type].title + " · " +
+      new Date(record.completedAt).toLocaleString("ko-KR")), answerSummary(record));
+    card.append(action("이 기록 삭제", function () { deleteRecord(record.id); }));
+    box.append(card);
+  }
+}
+function renderHistory() {
+  $("#history-count").textContent = "저장된 결과 " + history.length + "개";
+  $("#resume").disabled = draft === null;
+  const box = $("#history");
+  box.replaceChildren();
+  if (history.length === 0) box.append(makeText("p", "아직 기록이 없어요. 첫 번째로 도전해 보세요!"));
+  for (const record of [...history].reverse()) {
+    const card = makeText("div", "");
+    card.className = "record";
+    card.append(makeText("p", record.nickname + " · " + RESULTS[record.type].title));
+    const buttons = makeText("div", "");
+    buttons.className = "actions";
+    buttons.append(action("결과 보기", function () { showResult(record.id); }),
+      action("이 기록 삭제", function () { deleteRecord(record.id); }));
+    card.append(buttons);
+    box.append(card);
+  }
+  renderData();
+}
+function deleteRecord(id) {
+  history = loadHistory().filter(function (record) { return record.id !== id; });
+  writeJSON("localStorage", HISTORY_KEY, history);
+  if (selectedId === id) goHome();
+  else if (selectedId) showResult(selectedId);
+  renderHistory();
+}
+$("#start").addEventListener("click", function () {
+  const nickname = $("#nickname").value.trim().slice(0, 20) || "참가자 " + (history.length + 1);
+  draft = { id: crypto.randomUUID(), version: VERSION, nickname: nickname, current: 0, answers: {} };
+  saveDraft();
+  renderHistory();
+  renderQuestion();
+  $("#question").focus();
+});
+$("#resume").addEventListener("click", function () { if (draft) renderQuestion(); });
+$("#previous").addEventListener("click", function () {
+  if (!draft || draft.current === 0) return;
+  draft.current -= 1; saveDraft(); renderQuestion(); renderData(); $("#question").focus();
+});
+$("#next").addEventListener("click", function () {
+  if (!draft || draft.answers[QUESTIONS[draft.current].id] === undefined) return;
+  if (draft.current === QUESTIONS.length - 1) { finish(); return; }
+  draft.current += 1; saveDraft(); renderQuestion(); renderData(); $("#question").focus();
+});
+$("#friend").addEventListener("change", function () {
+  const me = history.find(function (record) { return record.id === selectedId; });
+  const friend = history.find(function (record) { return record.id === $("#friend").value; });
+  const box = $("#comparison");
+  box.replaceChildren();
+  if (!me || !friend) return;
+  let same = 0;
+  const list = document.createElement("ul");
+  for (const question of QUESTIONS) {
+    const matches = me.answers[question.id] === friend.answers[question.id];
+    if (matches) same += 1;
+    list.append(makeText("li", (matches ? "같아요 · " : "달라요 · ") + question.title + " : " +
+      question.choices[me.answers[question.id]] + " / " + question.choices[friend.answers[question.id]]));
+  }
+  box.append(makeText("p", QUESTIONS.length + "개 중 " + same + "개 일치"), list);
+});
+function deleteDraft() {
+  draft = null;
+  removeKey("sessionStorage", DRAFT_KEY);
+  goHome();
+}
+$("#next-person").addEventListener("click", deleteDraft);
+$("#delete-draft").addEventListener("click", deleteDraft);
+$("#delete-all").addEventListener("click", function () {
+  draft = null; history = [];
+  removeKey("sessionStorage", DRAFT_KEY);
+  removeKey("localStorage", HISTORY_KEY);
+  goHome();
+});
+$("#inspect").addEventListener("click", function () {
+  history = loadHistory(); draft = loadDraft();
+  $("#data-view").hidden = false;
+  if (selectedId) showResult(selectedId);
+  else if (!$("#quiz").hidden) {
+    if (draft) renderQuestion(); else goHome();
+  }
+  renderHistory();
+});
+renderHistory();
+</script>
+</body>
+</html>

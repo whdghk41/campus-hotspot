@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>나만의 캠퍼스 핫스팟</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+      /* 
+        
+        세 장소의 내용이 HTML에 모두 작성되어 있으므로, 
+        기본적으로 .place-panel 클래스를 가진 요소들을 숨기고(.place-panel { display: none; }),
+        .active 클래스가 붙은 패널만 화면에 보이도록(.place-panel.active { display: block; }) 설정합니다.
+      */
+      .place-panel { display: none; }
+      .place-panel.active { display: block; }
+    </style>
+</head>
+<body class="page-home">
+    <div class="page">
+        <header>
+            <!-- 
+               
+              모바일 화면 환경에서 화면 넘침을 방지하고 가독성을 높이기 위해 
+              햄버거 메뉴 및 반응형 내비게이션 영역을 배치했습니다.
+            -->
+            <div class="mobile-menu-container">
+                <div class="hamburger-box" id="hamburger-btn" aria-label="메뉴 열기">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </div>
+                <ul class="mobile-dropdown" id="mobile-dropdown">
+                    <!-- 모바일 드롭다운 메뉴 (다솔관, 매머드커피, 니콜스관 연결) -->
+                    <li><a href="#" data-place="dasol">다솔관</a></li>
+                    <li><a href="#" data-place="mammoth">매머드커피</a></li>
+                    <li><a href="#" data-place="nichols">니콜스관</a></li>
+                </ul>
+            </div>
+
+            <!--  가톨릭대학교 성심교정의 애정 어린 세 장소 소개 -->
+            <h1>나만의 캠퍼스 핫스팟</h1>
+            <p>성심교정에서 내가 아끼는 장소 세 곳</p>
+        </header>
+
+        <!-- 데스크탑용 버튼 내비게이션 영역 -->
+        <nav aria-label="캠퍼스 핫스팟 선택">
+            <button type="button" data-place="dasol">다솔관</button>
+            <button type="button" data-place="mammoth">매머드커피</button>
+            <button type="button" data-place="nichols">니콜스관</button>
+        </nav>
+
+        <main>
+            <!--  첫 번째 장소: 다솔관 (생각을 정리하는 장소) -->
+            <div id="dasol" class="place-panel active">
+                <article class="place-card">
+                    <h2>다솔관</h2>
+                    <img src="images/dasol.jpg" alt="다솔관 풍경">
+                    <p>잠시 생각을 정리하는 나의 장소</p>
+                </article>
+            </div>
+
+            <!--  두 번째 장소: 매머드커피 (카페인 충전과 활력소) -->
+            <div id="mammoth" class="place-panel">
+                <article class="place-card">
+                    <h2>매머드커피</h2>
+                    <img src="images/mammoth.jpg" alt="매머드커피 매장 전경">
+                    <p>수업 전후 카페인 충전과 활력을 주는 필수 코스</p>
+                </article>
+            </div>
+
+            <!--  세 번째 장소: 니콜스관 (강의실과 학과 사무실이 모인 중심 공간) -->
+            <div id="nichols" class="place-panel">
+                <article class="place-card">
+                    <h2>니콜스관</h2>
+                    <img src="images/nichols.jpg" alt="니콜스관 전경">
+                    <p>다양한 강의실과 학과 사무실이 모여 있는 중심 공간</p>
+                </article>
+            </div>
+        </main>
+
+        <footer>
+            <!-- 네모난 박스 형태의 사진 출처 링크 (JavaScript를 통해 장소별 네이버 지도 링크로 연동됨) -->
+            <a href="https://naver.me/5bVjQ4lj" target="_blank" class="source-link" id="source-box">사진 출처</a>
+        </footer>
+    </div>
+
+    <script>
+        const panels = document.querySelectorAll(".place-panel");
+        const buttons = document.querySelectorAll("[data-place]"); // 데스크탑 버튼 + 모바일 드롭다운 링크 모두 포함
+        const sourceBox = document.getElementById("source-box");
+        const hamburgerBtn = document.getElementById("hamburger-btn");
+        const mobileMenuContainer = document.querySelector(".mobile-menu-container");
+
+        //  각 장소별 고유 ID와 정확히 매칭되는 네이버 지도 링크 주소 데이터
+        const sources = {
+            "dasol": "https://naver.me/5bVjQ4lj",     // 다솔관 지도 링크
+            "mammoth": "https://naver.me/F2Z99wOu", // 매머드커피 지도 링크
+            "nichols": "https://naver.me/xVGFQF3f"  // 니콜스관 지도 링크
+        };
+
+        //  설명과 화면 구성을 바꾸는 핵심 함수
+        function showPlace(id) {
+            // 1.선택된 패널만 보이게 하고 나머지는 숨김 처리하는 로직
+            for (const panel of panels) {
+                if (panel.id === id) {
+                    panel.style.display = "block";
+                } else {
+                    panel.style.display = "none";
+                }
+            }
+
+            // 2. 바디 테마 클래스 변경 (장소별 배경색 변경 연동)
+            document.body.className = "page-" + id;
+
+            // 3.  하단 네모 박스의 지도 링크 주소(href)를 장소에 맞게 변경
+            if (sources[id]) {
+                sourceBox.href = sources[id];
+            }
+
+            // 4.  모바일 메뉴가 열려있을 때 장소를 선택하면 자동으로 메뉴가 닫히도록 처리
+            mobileMenuContainer.classList.remove("active");
+        }
+
+        // 버튼 클릭 이벤트를 받아 `showPlace` 함수에 전달하는 코드
+        for (const button of buttons) {
+            button.addEventListener("click", function (e) {
+                e.preventDefault(); // 모바일 a태그 기본 동작(페이지 깜빡임 등) 방지
+                showPlace(button.dataset.place);
+            });
+        }
+
+        // 햄버거 아이콘 클릭 시 모바일 메뉴 토글 (열고 닫기)
+        hamburgerBtn.addEventListener("click", function () {
+            mobileMenuContainer.classList.toggle("active");
+        });
+
+        // 화면의 다른 곳을 누르면 모바일 메뉴가 자연스럽게 닫히도록 설정
+        document.addEventListener("click", function (e) {
+            if (!mobileMenuContainer.contains(e.target)) {
+                mobileMenuContainer.classList.remove("active");
+            }
+        });
+    </script>
+</body>
+</html>
