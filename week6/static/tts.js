@@ -64,7 +64,11 @@ form.addEventListener("submit", async function (event) {
   if (audioURL) URL.revokeObjectURL(audioURL);
   audioURL = null;
   controls.disabled = true;
+  
+  // 상태 메시지 초기화 (색상 및 스타일 기본 복구)
   status.textContent = "Processing... 서버가 WAV를 생성하고 있습니다.";
+  status.style.color = "";
+  status.style.fontWeight = "normal";
 
   try {
     const response = await fetch("/api/tts", {
@@ -106,11 +110,18 @@ form.addEventListener("submit", async function (event) {
     audio.hidden = false;
     download.href = audioURL;
     download.hidden = false;
+    
+    // 성공 시 상태 메시지
     status.textContent = "완료 · WAV를 받아 파형을 그렸습니다.";
+    status.style.color = "";
   } catch (error) {
     result.hidden = true;
     decodedAudio = null;
-    status.textContent = "음성을 확인하지 못했습니다. " + error.message;
+    
+    // 에러 발생 시 시각적 강조 (붉은색 굵은 텍스트)
+    status.textContent = "⚠️ 음성을 확인하지 못했습니다. " + error.message;
+    status.style.color = "#d73a49";
+    status.style.fontWeight = "bold";
   } finally {
     controls.disabled = false;
   }

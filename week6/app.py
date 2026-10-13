@@ -43,11 +43,21 @@ def too_large(error):
 def process_image():
     started = perf_counter()
     upload = request.files.get("image")
-    operation = request.form.get("operation", "grayscale")
+    
+    # 1. 단일 operation 대신 체크박스로 선택된 필터 목록(리스트)을 가져옵니다.
+    selected_filters = request.form.getlist("filters")
+    
     if upload is None or upload.filename == "":
         return {"error": "이미지 파일을 선택하세요."}, 400
-    if operation not in {"grayscale", "blur", "edge"}:
-        return {"error": "지원하지 않는 처리 방법입니다."}, 400
+    if not selected_filters:
+        return {"error": "처리할 필터를 하나 이상 선택하세요."}, 400
+        
+    # 허용된 필터 이름 검증
+    allowed_filters = {"grayscale", "blur", "edge"}
+    for f in selected_filters:
+        if f not in allowed_filters:
+            return {"error": "지원하지 않는 처리 방법입니다."}, 400
+
     try:
         kernel = int(request.form.get("kernel", "15"))
     except ValueError:
@@ -58,6 +68,7 @@ def process_image():
     raw = upload.read()
     if len(raw) > 5 * 1024 * 1024:
         return {"error": "파일은 5 MiB 이하여야 합니다."}, 413
+        
     # 확장자만 믿지 않고 형식·크기를 확인한 다음 OpenCV로 디코딩합니다.
     try:
         with warnings.catch_warnings():
@@ -81,18 +92,28 @@ def process_image():
     if max(height, width) > 1600:
         scale = 1600 / max(height, width)
         image = cv2.resize(image, (max(1, round(width * scale)), max(1, round(height * scale))))
+        
     compute_started = perf_counter()
-    if operation == "grayscale":
-        result = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-    elif operation == "blur":
-        result = cv2.GaussianBlur(image, (kernel, kernel), 0)
-    else:
-        gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-        result = cv2.Canny(gray, 100, 200)
+    
+    # 2. 선택한 필터들을 순서대로 차례차례 적용 (파이프라인)
+    result = image.copy()
+    for f in selected_filters:
+        if f == "grayscale":
+            if len(result.shape) == 3:
+                result = cv2.cvtColor(result, cv2.COLOR_BGR2GRAY)
+                result = cv2.cvtColor(result, cv2.COLOR_GRAY2BGR) # 다음 필터 연산을 위해 3채널 복원
+        elif f == "blur":
+            result = cv2.GaussianBlur(result, (kernel, kernel), 0)
+        elif f == "edge":
+            gray = cv2.cvtColor(result, cv2.COLOR_BGR2GRAY) if len(result.shape) == 3 else result
+            edges = cv2.Canny(gray, 100, 200)
+            result = cv2.cvtColor(edges, cv2.COLOR_GRAY2BGR)
+
     compute_ms = (perf_counter() - compute_started) * 1000
     ok, encoded = cv2.imencode(".png", result)
     if not ok:
         return {"error": "결과 이미지를 만들지 못했습니다."}, 500
+        
     response = send_file(BytesIO(encoded.tobytes()), mimetype="image/png",
                          download_name="processed.png", max_age=0)
     response.headers["Cache-Control"] = "no-store"

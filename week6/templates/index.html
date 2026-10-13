@@ -15,8 +15,15 @@
 <fieldset id="controls">
 <label for="image">사진 선택 · JPEG/PNG, 5 MiB 이하, 800만 픽셀 이하</label>
 <input id="image" name="image" type="file" accept="image/jpeg,image/png" required>
-<label for="operation">처리 방법</label>
-<select id="operation" name="operation"><option value="grayscale">Grayscale · 흑백</option><option value="blur">Gaussian Blur · 흐리게</option><option value="edge">Edge Detection · 윤곽선</option></select>
+
+<!-- 다중 필터 선택 체크박스 영역 -->
+<label>다중 필터 선택 (선택한 순서대로 적용됩니다)</label>
+<div class="checkbox-group" style="margin-bottom: 15px; display: flex; gap: 15px;">
+  <label><input type="checkbox" name="filters" value="grayscale"> 흑백 (Grayscale)</label>
+  <label><input type="checkbox" name="filters" value="blur"> 흐리게 (Gaussian Blur)</label>
+  <label><input type="checkbox" name="filters" value="edge"> 윤곽선 (Edge Detection)</label>
+</div>
+
 <label for="kernel">Blur 커널 · 홀수 3~51 (Blur에서만 사용)</label>
 <input id="kernel" name="kernel" type="number" min="3" max="51" step="2" value="15" required>
 <div class="submit-options">
