@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="hero">
+  <p class="eyebrow">DAILY MUSIC VIBE</p>
+  <h1>{{ board_title }}</h1>
+  <p class="lead">{{ board_question }}</p>
+  <p>나만의 최애 음악을 공유하고 다른 친구들의 플레이리스트를 구경해 보세요. 작성한 추천 곡은 서버 DB에 안전하게 저장됩니다.</p>
+</section>
+
+<section class="panel" aria-labelledby="write-heading">
+  <h2 id="write-heading">추천 곡 남기기</h2>
+  {% if current_user %}
+    <form method="post" action="{{ url_for('add_comment') }}">
+      <input type="hidden" name="_csrf_token" value="{{ csrf_token }}">
+      <label for="content">{{ current_user['username'] }}님의 추천 한 줄 · 1~300자</label>
+      <textarea id="content" name="content" rows="3" maxlength="300" required placeholder="예: 잔나비 - 주저하는 연인들을 위해 (가사와 멜로디가 너무 좋아요)"></textarea>
+      <button class="primary" type="submit">추천 올리기</button>
+    </form>
+  {% else %}
+    <p>노래를 추천하려면 로그인하세요. 다른 친구들이 공유한 플레이리스트는 로그인 없이도 볼 수 있습니다.</p>
+    <p><a class="button-link" href="{{ url_for('login') }}">로그인하기</a></p>
+  {% endif %}
+</section>
+
+<section class="panel" aria-labelledby="list-heading">
+  <div class="section-heading"><h2 id="list-heading">모두의 플레이리스트 추천</h2><span>{{ comments|length }}개</span></div>
+  {% if request.args.get('reported') %}<p class="notice">신고가 접수되었습니다. 관리자 화면에서 검토됩니다.</p>{% endif %}
+  {% if comments %}
+    <ol class="comment-list">
+      {% for comment in comments %}
+        <li class="comment-card">
+          <div class="comment-meta"><strong>{{ comment['username'] }}</strong><time>{{ comment['created_at'] }} UTC</time></div>
+          <p class="comment-text">{{ comment['content'] }}</p>
+          {% if current_user and current_user['id'] == comment['author_id'] %}
+            <form method="post" action="{{ url_for('delete_comment', comment_id=comment['id']) }}">
+              <input type="hidden" name="_csrf_token" value="{{ csrf_token }}">
+              <button class="delete-button" type="submit">내 추천 삭제</button>
+            </form>
+          {% elif current_user %}
+            <form class="report-form" method="post" action="{{ url_for('report_comment', comment_id=comment['id']) }}">
+              <input type="hidden" name="_csrf_token" value="{{ csrf_token }}">
+              <label for="reason-{{ comment['id'] }}">신고 이유 · 3~100자</label>
+              <input id="reason-{{ comment['id'] }}" name="reason" minlength="3" maxlength="100" required placeholder="예: 부적절한 내용 또는 광고">
+              <button class="report-button" type="submit">신고</button>
+            </form>
+          {% endif %}
+        </li>
+      {% endfor %}
+    </ol>
+  {% else %}
+    <p class="empty">아직 등록된 추천 곡이 없습니다. 첫 번째 음악을 공유해 보세요!</p>
+  {% endif %}
+</section>
+{% endblock %}
