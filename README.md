@@ -139,7 +139,7 @@
     python -m piper.download_voices en_US-lessac-low --download-dir models
     python -m flask --app tts_app run --debug --port 5000
     ```
-  - 로컬 주소: `http://127.0.0.1:5000`
+  - 로컬 주소: `http://127.0.0.1:5000/tts`
 - 사용한 모델 이름·언어·출처:
   - 모델 이름: Piper TTS 영어 음성 모델 (`en_US-lessac-low`)
   - 언어: 영어 (`en`)
